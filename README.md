@@ -1,2 +1,2 @@
-# BlazorAppWasm-06 -14
+# BlazorAppWasm-06
 Tugas 14
