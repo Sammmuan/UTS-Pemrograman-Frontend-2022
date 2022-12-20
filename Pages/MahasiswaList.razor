@@ -1,38 +1,49 @@
 @page "/mahasiswa"
 @using System.Net.Http
 @using System.Net.Http.Json
-@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components.Web
 @inject HttpClient Http
+@inject NavigationManager UriHelper
+@inherits LayoutComponentBase
 
-<PageTitle>Mahasiswa</PageTitle>
+<MudThemeProvider/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<MudLayout>
+    <MudAppBar>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        My Application
+    </MudAppBar>
+    <MudDrawer @bind-Open="@_drawerOpen">
+        <MyNavMenu/>
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+<PageTitle>List Mahasiswa</PageTitle>
 
 <h1>Mahasiswa SI UKDW</h1>
 
-<p>Data Mahasiswa Universitas Kristen Duta Wacana.</p>
+<p>This component demonstrates fetching data Mahasiswa from the server.</p>
 
-<a href="/add">
-<button class="btn btn-primary">Tambah Mahasiswa</button></a>
-<div class="input-group col">
-        <input type="text" class="form-control" @onclick="CariData" placeholder="Cari/Hapus Mahasiswa Berdasarakan NIM" @bind="SearchString" />
-        <a class="btn btn-primary" role="button" @onclick="CariData">Cari</a>
-        <a class="btn btn-danger" role="button" @onclick="DeleteData">Delete Data</a>
-    </div>
 @if (mhs == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-
-    <table class="Mahasiswa">
+    <NavLink class="btn btn-primary" href="/mahasiswa/tambah">Tambah</NavLink>
+    <table class="table">
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Nama</th>
+                <th>NAMA</th>
                 <th>NIM</th>
-                <th>Alamat</th>
-                <th>EMAIL</th>
-               
+                <th>ALAMAT</th>
+                <th>AKSI</th>
             </tr>
         </thead>
         <tbody>
@@ -43,14 +54,9 @@ else
                     <td>@mh.nama</td>
                     <td>@mh.nim</td>
                     <td>@mh.alamat</td>
-                    <td>@mh.email</td>
                     <td>
-                        <a href="/add" ><button class="btn btn-primary">Update</button></a>
-                        
-                        </td>
-                    <td>
-                       <a ><button class="btn btn-danger">Delete</button></a>
-                        </td>
+                        <NavLink class="btn btn-primary" href='@("/mahasiswa/ubah/72170177/"+mh.id+"/"+mh.nim)'>Ubah</NavLink>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -58,36 +64,18 @@ else
 }
 
 @code {
+    bool _drawerOpen = true;
 
-     protected List<Mahasiswa> searchUserData = new();
-    protected override async Task OnInitializedAsync(){
-        mhs = await Http.GetFromJsonAsync<List<Mahasiswa>>("https://kpsi.fti.ukdw.ac.id/api/progmob/mhs/72200403");
-        searchUserData = mhs;
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
     }
+    private Mahasiswa[]? mhs;
 
-    protected List<Mahasiswa> mhs = new();
-    protected string SearchString { get; set; } = string.Empty;
-    protected void CariData(){
-        if (!string.IsNullOrEmpty(SearchString)){
-            mhs = searchUserData
-                .Where(x => x.nim.IndexOf(SearchString, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList();
-        }else{
-            mhs = searchUserData;
-        }
+    protected override async Task OnInitializedAsync()
+    {
+        mhs = await Http.GetFromJsonAsync<Mahasiswa[]>("https://kpsi.fti.ukdw.ac.id/api/progmob/mhs/72200403");
     }
-    protected void DeleteData(){
-    if (!string.IsNullOrEmpty(SearchString)){
-            mhs = searchUserData
-                .Where(x => x.nim.IndexOf(SearchString, StringComparison.OrdinalIgnoreCase) != -1)
-                .ToList();
-        }else{
-            mhs = searchUserData;
-        }
-    }
-   
-
-
 
     public class Mahasiswa
     {
@@ -97,9 +85,12 @@ else
 
         public string nim { get; set; }
 
-        public string alamat {get;set;}
+        public string nim_progmob { get; set; }
 
-        public string email {get;set;}
+        public string alamat { get; set; }
 
+        public string email { get; set; }
+
+        public string foto { get; set; }
     }
 }
